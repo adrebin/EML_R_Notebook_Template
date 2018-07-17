@@ -16,7 +16,7 @@ Step 1: Set Working Directory
 getwd()
 
 # Create directory specificly for project
-#dir.create("PROPHET_Aerosols_Ozone_2014")
+#dir.create("your_folder")
 
 # Set working directory (uncomment and edit for YOUR own folder)
 setwd ("/Users/your_name/Desktop/your_folder")
