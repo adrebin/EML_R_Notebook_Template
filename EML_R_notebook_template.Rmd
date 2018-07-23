@@ -50,7 +50,7 @@ Step 3: Identify Data and Data Cleaning
 ```
 
 
-**Now would be a good time to go through the template and replace all "your_file_1" etc. with the names of your own data files (add or delete as necessary). The easiest way to do this is to do a search-and-replace, by pressing command + 'f'. Put "your_file_1" in the "find" section and the desired file name in the "replace" section, and then click the "replace" button until complete**  
+**Now would be a good time to go through the template and replace all "your_file_1" etc. with the names of your own data files (add or delete as necessary). The easiest way to do this is to do a search-and-replace, by pressing command + 'f'. Put "your_file_1" in the "find" section and the desired file name in the "replace" section, and then click the "replace" button until complete. You should delete any extra your_file_# lines if you have less than four files to publish**  
 
 Step 4: Import templates from EMLassemblyline
 
@@ -124,11 +124,13 @@ Step 8: Edit Keywords
 # Read keywords table into data frame
 keywords <- read_tsv("keywords.txt") 
 
-# Edit dataframe keywords
-#newkeywords <- editData::editData(keywords) 
-newkeywords <- edit(keywords)
+# Edit dataframe keywords (two editor options: editData has a nice GUI, but have to save and exit to do anthing else in RStudio, edit function allows you to look up unit dictionary or help. Note, both editors insert "NA" strings that mess with EMLassemblyline's formatting. There are a few lines of code throughout this template that should fix this, but you can always open the files in a normal text editor to view/edit these files)
+newkeywords <- editData::editData(keywords) 
+#newkeywords <- edit(keywords)
+
 # Takes out any "NA" strings in file, messes with rendering for make_eml()
 newkeywords$keywordThesaurus[is.na(newkeywords$keywordThesaurus)] <- ""
+
 # Output to new keywords.txt file
 write_tsv(newkeywords, path = "keywords.txt")
 ```
@@ -158,6 +160,8 @@ personnel <- read_tsv("personnel.txt")
 
 # Edit Personnel dataframe
 newPersonnel <- editData::editData(personnel)
+#Takes out any "NA" strings that editData::editData() might have inserted
+newPersonnel[is.na(newPersonnel)] <- ""
 
 write_tsv(newPersonnel, path = "personnel.txt")
 ```
@@ -189,11 +193,21 @@ attributes_your_file_2 <- read_tsv(file.choose())
 attributes_your_file_3 <- read_tsv(file.choose())
 attributes_your_file_4 <- read_tsv(file.choose())
 
-# Edit attributes_your_file_1 dataframe (two editor options: editData has a nice GUI, but have to save and exit to do anthing else in RStudio, edit function allows you to look up unit dictionary or help )
+# Edit attributes_your_file_1 dataframe (two editor options: editData() has a nice GUI, but have to save and exit to do anthing else in RStudio, edit() function allows you to look up unit dictionary or help )
 attributes_your_file_1_edited <- editData::editData(attributes_your_file_1)  # or attributes_your_file_1_edited <- edit(attributes_your_file_1)
 attributes_your_file_2_edited <- editData::editData(attributes_your_file_2)
 attributes_your_file_3_edited <- editData::editData(attributes_your_file_3)
 attributes_your_file_4_edited <- editData::editData(attributes_your_file_4)
+
+#Takes out any "NA" strings editData::editData() might have inserted
+attributes_your_file_1_edited[is.na(attributes_your_file_1_edited$unit)]
+attributes_your_file_1_edited[is.na(attributes_your_file_1_edited$dateTimeFormatString)]
+attributes_your_file_2_edited[is.na(attributes_your_file_2_edited$unit)]
+attributes_your_file_2_edited[is.na(attributes_your_file_2_edited$dateTimeFormatString)]attributes_your_file_1_edited[is.na(attributes_your_file_1_edited$unit)]
+attributes_your_file_3_edited[is.na(attributes_your_file_3_edited$dateTimeFormatString)]attributes_your_file_1_edited[is.na(attributes_your_file_1_edited$unit)]
+attributes_your_file_3_edited[is.na(attributes_your_file_3_edited$dateTimeFormatString)]
+attributes_your_file_4_edited[is.na(attributes_your_file_4_edited$unit)]
+attributes_your_file_4_edited[is.na(attributes_your_file_4_edited$dateTimeFormatString)]
 
 # Write attributes edited in data frame to file
 write_tsv(attributes_your_file_1_edited, path = "attributes_your_file_1.txt")
@@ -296,7 +310,9 @@ Step 13: Make EML
     + dataset.title : A character string specifying the title for your dataset. Be descriptive (more than 5 words). We recommend the following format: Project name: Broad description: Time span (e.g. "GLEON: Long term lake chloride concentrations from North America and Europe: 1940-2016").  
     + data.files : A list of character strings specifying the names of the data files of your dataset.  
     + data.files.description : A list of character strings briefly describing the data files listed in the data.files argument and in the same order as listed in the data.files argument.  
-    + data.files.quote.character : A list of character strings defining the quote characters used in your data files and in the same order as listed in the data.files argument. If the quote character is a quotation, then enter "\"". If the quote character is an apostrophe, then enter "\'". If there is no quote character then don't use this argument when running make_eml.     + zip.dir.description : At the moment make_eml() can detect a single .zip directory automatically (good for auxilliary files). This description will be a character string briefly describing the contents of the .zip directory.
+    + data.files.quote.character : A list of character strings defining the quote characters used in your data files and in the same order as listed in the data.files argument. If the quote character is a quotation, then enter "\"". If the quote character is an apostrophe, then enter "\'". If there is no quote character then don't use this argument when running make_eml.     
+    + zip.dir : A list of characgter strings specifying the names of the zip directories of your dataset. 
+    + zip.dir.description : A list of character strings briefly describing the zip directories listed in the zip.dir arguement and in the same order as listed in the zip.dir argument. 
     + data.files.url : A character string specifying the URL of where your data tables are stored on a publicly accessible server (i.e. does not require user ID or password). The EDI data repository software, PASTA+, will use this to upload your data into the repository. If you will be manually uploading your data tables, then don't use this argument when running make_eml.  
     + temporal.coverage : A list of character strings specifying the beginning and ending dates of your dataset. Use the format YYYY-MM-DD.  
     + geographic.description : A character string describing the geographic coverage of your dataset.  
@@ -322,10 +338,10 @@ make_eml(path = "/Users/your_name/Desktop/your_folder",
          #zip.dir = c("your_zip_file_1"), #name of your zip directories
          #zip.dir.description = c("Description for zip file 1"), #descriptions of your zip directories
          data.files.quote.character = c("\"", "\"","\"","\""), #have one per file 
-         data.files.url = "http://some_website_or_database.com",
+         #data.files.url = "http://some_website_or_database.com",
          temporal.coverage = c("YYYY-MM-DD", "YYYY-MM-DD"), 
          geographic.description = "Verbal location of data, ex: North America",
-         geographic.coordinates = c("45.558794", "-84.714524", "45.558794", "-84.714524"), #N, E, S, W
+         geographic.coordinates = c("0.00", "0.00", "0.00", "0.00"), #N, E, S, W
          maintenance.description = "completed", #completed or ongoing
          user.id = "your_id (ex: jsmith)",
          affiliation = "EDI", #or LTER
